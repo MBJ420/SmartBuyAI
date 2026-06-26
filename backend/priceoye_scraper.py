@@ -53,12 +53,22 @@ def price_oye_scraper(query: str):
         except:
             buys = None
             
+        # extract image url
+        try:
+            image_url = card.find("amp-img", class_="product-thumbnail")["src"]
+        except:
+            try:
+                image_url = card.find("img")["src"]
+            except:
+                image_url = None
+
         website = "priceoye"
         print("Name: ", name)
         print("Price: ", price)
         print("Rating: ", rating)  
         print("Buys: ", buys)
         print("Link: ", link)
+        print("Image URL: ", image_url)
         print("Website: ", website)
 
         # Collect products in list of dicts
@@ -68,6 +78,7 @@ def price_oye_scraper(query: str):
             "rating": rating,
             "buys": buys,
             "link": link,
+            "image_url": image_url,
             "website": website
         })
 

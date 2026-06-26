@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBuyAI: Frontend Guide for Python Developers</title>
+    <!-- We use Bootstrap to make it look nice without writing much CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 0; border-radius: 0 0 20px 20px; margin-bottom: 30px; }
+        
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; overflow: hidden; }
+        .card-header { background-color: white; border-bottom: 1px solid #eee; font-weight: bold; font-size: 1.1rem; padding: 15px 20px; }
+        .card-body { padding: 25px; }
+        
+        .code-comparison { display: flex; flex-direction: column; gap: 20px; }
+        @media (min-width: 992px) { .code-comparison { flex-direction: row; } }
+        
+        .code-box { flex: 1; background-color: #282c34; color: #abb2bf; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Courier New', monospace; overflow-x: auto; font-size: 0.95rem; line-height: 1.5; }
+        .code-box h6 { font-size: 12px; margin-top: 0; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 10px; border-bottom: 1px solid #444; }
+        
+        /* Syntax highlighting colors */
+        .kw { color: #c678dd; } /* Keyword */
+        .fn { color: #61afef; } /* Function */
+        .st { color: #98c379; } /* String */
+        .vr { color: #e06c75; } /* Variable/Property */
+        .cm { color: #5c6370; font-style: italic; } /* Comment */
+        .obj { color: #e5c07b; } /* Object/Class */
+        
+        .js-box h6 { color: #f1e05a; }
+        .py-box h6 { color: #3572A5; }
+        
+        .highlight-box { background-color: #e9ecef; border-left: 4px solid #764ba2; padding: 15px; border-radius: 4px; margin: 20px 0; }
+        
+        .badge-html { background-color: #e34f26; }
+        .badge-css { background-color: #1572b6; }
+        .badge-js { background-color: #f7df1e; color: #000; }
+        .badge-py { background-color: #3572a5; }
+    </style>
+</head>
+<body>
+
+    <div class="hero text-center shadow-sm">
+        <div class="container">
+            <h1 class="display-5 fw-bold">Frontend for Python Devs</h1>
+            <p class="lead mb-0">A visual guide to understanding the SmartBuyAI frontend code.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Section 1: The Big Picture -->
+        <div class="card">
+            <div class="card-header">
+                1. The Big Picture: How it all fits together
+            </div>
+            <div class="card-body">
+                <p>Since you are building a web app, the browser only understands three languages. Here is what they do in the context of SmartBuyAI:</p>
+                <div class="row text-center mt-4">
+                    <div class="col-md-4">
+                        <h4 class="mb-3"><span class="badge badge-html rounded-pill px-3 py-2">HTML = The Skeleton</span></h4>
+                        <p class="text-muted">The text boxes where users type "laptop" and "50000". The physical "Search" button on the screen.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="mb-3"><span class="badge badge-css rounded-pill px-3 py-2">CSS = The Makeup</span></h4>
+                        <p class="text-muted">Making the button blue, the text boxes rounded, and positioning everything neatly in the center of the screen.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="mb-3"><span class="badge badge-js rounded-pill px-3 py-2">JavaScript = The Muscle</span></h4>
+                        <p class="text-muted">Detecting when the button is clicked, grabbing the text from the boxes, and sending it to your Python backend.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: The Core Function -->
+        <div class="card">
+            <div class="card-header">
+                2. The Core Function: Taking the user's order to Python
+            </div>
+            <div class="card-body">
+                <p>In our project plan, we have a function called <code>searchProducts()</code>. This is the <strong>only</strong> piece of JavaScript you really need to understand to connect your frontend to your backend.</p>
+                <p>Let's look at the exact JavaScript code we will use, side-by-side with how you would write the exact same logic in Python.</p>
+                
+                <div class="code-comparison mt-4">
+                    <!-- JS Box -->
+                    <div class="code-box js-box shadow-sm">
+                        <h6>JavaScript (Frontend)</h6>
+<pre class="m-0">
+<span class="kw">async function</span> <span class="fn">searchProducts</span>() {
+    <span class="cm">// 1. Read what the user typed in the HTML</span>
+    <span class="kw">const</span> product = <span class="obj">document</span>.<span class="fn">getElementById</span>(<span class="st">"productInput"</span>).<span class="vr">value</span>;
+    <span class="kw">const</span> budget = <span class="obj">document</span>.<span class="fn">getElementById</span>(<span class="st">"budgetInput"</span>).<span class="vr">value</span>;
+
+    <span class="cm">// 2. Send request to Python FastAPI</span>
+    <span class="kw">const</span> url = <span class="st">`http://localhost:8000/search?product=</span><span class="kw">${</span>product<span class="kw">}</span><span class="st">&budget=</span><span class="kw">${</span>budget<span class="kw">}</span><span class="st">`</span>;
+    <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(url);
+    
+    <span class="cm">// 3. Parse the JSON returned by Python</span>
+    <span class="kw">const</span> data = <span class="kw">await</span> response.<span class="fn">json</span>();
+
+    <span class="cm">// 4. Print it to the browser console</span>
+    <span class="obj">console</span>.<span class="fn">log</span>(data); 
+}</pre>
+                    </div>
+
+                    <!-- Python Box -->
+                    <div class="code-box py-box shadow-sm">
+                        <h6>Python (Mental Model Equivalent)</h6>
+<pre class="m-0">
+<span class="kw">import</span> requests
+
+<span class="kw">async def</span> <span class="fn">search_products</span>():
+    <span class="cm"># 1. Read what the user typed (Imaginary GUI library)</span>
+    product = gui.<span class="fn">get_element</span>(<span class="st">"productInput"</span>).<span class="vr">value</span>
+    budget = gui.<span class="fn">get_element</span>(<span class="st">"budgetInput"</span>).<span class="vr">value</span>
+
+    <span class="cm"># 2. Send request to Python FastAPI</span>
+    url = <span class="st">f"http://localhost:8000/search?product=</span><span class="kw">{</span>product<span class="kw">}</span><span class="st">&budget=</span><span class="kw">{</span>budget<span class="kw">}</span><span class="st">"</span>
+    response = requests.<span class="fn">get</span>(url)
+    
+    <span class="cm"># 3. Parse the JSON returned by Python</span>
+    data = response.<span class="fn">json</span>()
+
+    <span class="cm"># 4. Print it to the terminal</span>
+    <span class="fn">print</span>(data)
+</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Line by Line Breakdown -->
+        <div class="card">
+            <div class="card-header">
+                3. The Translation Guide (Line by Line)
+            </div>
+            <div class="card-body">
+                
+                <h5 class="mt-2 text-primary">A. Defining Variables</h5>
+                <p>In Python, you just type <code>name = "laptop"</code>. In JS, you must put <code>const</code> or <code>let</code> in front of it.</p>
+                <ul>
+                    <li><code>const</code> = A variable that will never change (Constant). Like the user's search term.</li>
+                    <li><code>let</code> = A variable that might change later (like a counter in a loop).</li>
+                </ul>
+
+                <hr class="my-4">
+
+                <h5 class="text-primary">B. Talking to the HTML (The DOM)</h5>
+                <div class="highlight-box">
+                    <code><span class="obj">document</span>.<span class="fn">getElementById</span>(<span class="st">"productInput"</span>).<span class="vr">value</span></code>
+                </div>
+                <p>This is the most famous line in JavaScript. 
+                <br><strong><code>document</code></strong> represents your entire HTML page. 
+                <br><strong><code>getElementById</code></strong> is a built-in function that searches the HTML for a specific tag (e.g., <code>&lt;input id="productInput"&gt;</code>). 
+                <br><strong><code>.value</code></strong> extracts the text the user actually typed inside that box.</p>
+
+                <hr class="my-4">
+
+                <h5 class="text-primary">C. Formatting Strings (f-strings vs backticks)</h5>
+                <p>In Python, you use <code>f"Hello {name}"</code>. <br>In JavaScript, you use backticks (the key above Tab) and a dollar sign: <code>`Hello ${name}`</code>. This allows us to inject the user's product and budget into the URL.</p>
+
+                <hr class="my-4">
+
+                <h5 class="text-primary">D. Making the API Call (fetch vs requests)</h5>
+                <div class="highlight-box">
+                    <code><span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(url);</code>
+                </div>
+                <p>In Python, you use the <code>requests</code> library to download a webpage or hit an API. In JavaScript, that tool is built directly into the browser and is called <code>fetch()</code>. It sends the HTTP request to your FastAPI backend.</p>
+                <p><strong>Why <code>await</code>?</strong> Talking to a server takes time (maybe 1 or 2 seconds). If JavaScript doesn't wait, it will move to the next line of code before the data arrives, causing an error. <code>await</code> tells JS: "Freeze this function right here until the server responds."</p>
+
+                <hr class="my-4">
+
+                <h5 class="text-primary">E. Reading the Data</h5>
+                <div class="highlight-box">
+                    <code><span class="kw">const</span> data = <span class="kw">await</span> response.<span class="fn">json</span>();</code>
+                </div>
+                <p>When FastAPI sends data back, it sends it as a raw text string. <code>.json()</code> parses that text into a JavaScript Object (which looks and acts exactly like a Python Dictionary). Now you can do things like <code>data[0].price</code>.</p>
+
+            </div>
+        </div>
+
+        <!-- Section 4: What happens next? -->
+        <div class="card mb-5">
+            <div class="card-header">
+                4. What happens after we get the data?
+            </div>
+            <div class="card-body">
+                <p>Right now, the code just says <code>console.log(data)</code>. This prints the data to the browser's hidden developer console (Press F12 in Chrome to see it). It doesn't show it to the user yet.</p>
+                <p><strong>The Final Step (which we will build later):</strong></p>
+                <p>Once you are comfortable with this, the final step will be writing a JavaScript loop (like a Python <code>for item in data:</code>) that takes the HTML for your PriceOye card, fills in the title and price, and injects it onto the screen. But for now, just understanding how the data moves from the HTML -> JS -> Python -> JS is the most important part!</p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

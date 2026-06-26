@@ -3,7 +3,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium_stealth import stealth
 from selenium.webdriver.common.by import By
 import time
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup 
 import sqlite3
 import random
 

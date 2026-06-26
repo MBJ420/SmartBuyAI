@@ -1,0 +1,77 @@
+========================================================================
+📝 SmartBuy AI: Full App Architecture & Workflow Guide (Notes)
+========================================================================
+
+This file explains how the SmartBuy AI deal-finder application is structured, how the FastAPI backend handles traffic, how the local database manages cached results, and how scrapers run in the background.
+
+------------------------------------------------------------------------
+📂 1. Core Directory Structure
+------------------------------------------------------------------------
+SmartBuyAI/
+│
+├── backend/                       # 🐍 Python Backend (FastAPI)
+│   ├── main.py                    # Server entry point and API routes
+│   ├── database.py                # Local SQLite database setup & cache query functions
+│   └── priceoye_scraper.py        # PriceOye scraping function (requests + bs4)
+│
+├── market_data.db                 # 🗄️ SQLite database file (created automatically)
+└── requirements.txt               # List of python package dependencies
+
+------------------------------------------------------------------------
+⚙️ 2. How the Backend Works (backend/main.py)
+------------------------------------------------------------------------
+The backend is built with FastAPI. It listens for network requests and handles them using three main endpoints (API URLs):
+
+1. GET / (Health Check)
+   - Tells you if the server is running.
+
+2. GET /search?q={search_term} (Search Endpoint)
+   - Coordinates the caching and scraping workflow:
+     a. Checks the database cache for the search term (e.g., "laptop").
+     b. If the data is already cached (success): Immediately returns the list of laptops.
+     c. If it's already scraping in the background: Tells the client that a scrape is in progress.
+     d. If it has never been searched (or failed previously):
+        - Changes the query status in the database to 'scraping'.
+        - Spawns a background task to scrape PriceOye.
+        - Immediately returns a response to the user: {"status": "scraping"} so the browser doesn't freeze.
+
+3. GET /search/status?q={search_term} (Status Polling Endpoint)
+   - Allows the frontend to check the current database status of a query (returns 'scraping', 'success', or 'failed').
+
+------------------------------------------------------------------------
+🗄️ 3. Summary of the Database Layer (backend/database.py)
+------------------------------------------------------------------------
+We use SQLite (`market_data.db`) to cache results locally so we don't spam the target website with scrapes. The database has two tables:
+
+1. Table: `queries`
+   - Keeps track of search term logs.
+   - Columns: `query` (primary key), `status` ('scraping', 'success', 'failed'), `last_scraped_at`.
+   - Purpose: Lets the backend check if it's currently scraping this term or if it already has successful results.
+
+2. Table: `products`
+   - Stores the actual laptop deals found.
+   - Columns: `id`, `query`, `name`, `price`, `rating`, `buys`, `link`, `website`.
+   - Purpose: Holds the product info for all query terms so we can return them instantly.
+
+Key Database Functions:
+- `init_db()`: Automatically creates the tables on startup.
+- `get_query_status(query)`: Checks if a term has been searched and returns its current status.
+- `set_query_status(query, status)`: Updates a query's status (e.g. setting it to 'scraping' or 'success').
+- `get_cached_products(query)`: Retrieves all matching laptops for a query.
+- `save_products(query, products_list)`: Clears out old cache entries for a query and inserts a new list of product dictionaries.
+
+------------------------------------------------------------------------
+🔄 4. How Scrapers are Triggered (Asynchronous Background Tasks)
+------------------------------------------------------------------------
+Scraping website HTML via BeautifulSoup takes time. If we ran it inside the main search request, the user's browser would freeze for 5–10 seconds.
+
+FastAPI solves this with BackgroundTasks:
+1. When a new search is made, `main.py` adds the function `scrape_and_save_task(query)` to FastAPI's background task queue:
+   `background_tasks.add_task(scrape_and_save_task, clean_query)`
+2. FastAPI immediately returns the HTTP response to the client (sending {"status": "scraping"}).
+3. With the network connection now free, FastAPI automatically runs `scrape_and_save_task` on a separate thread.
+4. Inside the background task:
+   - It calls `price_oye_scraper(query)` which parses the website HTML and returns a standard list of dictionaries.
+   - It calls `save_products(query, products)` to write the laptops to the database.
+   - It calls `set_query_status(query, 'success')` to mark the search as completed.
+5. In the meantime, the frontend polls the `/search/status` endpoint. Once the status changes from `'scraping'` to `'success'`, the frontend makes a request to `/search` again, which instantly serves the fresh data from the database.
