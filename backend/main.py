@@ -1,5 +1,6 @@
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from backend.database import get_query_status, set_query_status, get_cached_products, save_products
 from backend.priceoye_scraper import price_oye_scraper
 from backend.ai_ranking import rank_products
@@ -167,3 +168,6 @@ def ai_recommend(q: str, budget: Optional[float] = None, min_rating: Optional[fl
         "query": q,
         "data": ranked_results
     }
+
+# Mount the frontend directory to serve static HTML/JS files
+app.mount("/", StaticFiles(directory="frontend", html=True), name="static")

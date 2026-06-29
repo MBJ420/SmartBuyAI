@@ -1,4 +1,3 @@
-const BACKEND_URL = "http://localhost:8000";
 let pollingInterval;
 
 async function startSearch() {
@@ -25,7 +24,7 @@ async function startSearch() {
     if (pollingInterval) clearInterval(pollingInterval);
 
     // Construct URL with filters
-    let url = `${BACKEND_URL}/search?q=${encodeURIComponent(searchInput)}`;
+    let url = `/search?q=${encodeURIComponent(searchInput)}`;
     if (budgetInput) url += `&budget=${encodeURIComponent(budgetInput)}`;
     if (ratingInput) url += `&min_rating=${encodeURIComponent(ratingInput)}`;
 
@@ -68,7 +67,7 @@ function pollForResults(query, budget, rating) {
             loadingText.innerText = "Scraping data from PriceOye" + ".".repeat(dots);
 
             // Fetch current status
-            const response = await fetch(`${BACKEND_URL}/search/status?q=${encodeURIComponent(query)}`);
+            const response = await fetch(`/search/status?q=${encodeURIComponent(query)}`);
             const data = await response.json();
 
             if (data.status === "success") {
@@ -92,7 +91,7 @@ function pollForResults(query, budget, rating) {
 
 async function fetchFinalData(query, budget, rating) {
     try {
-        let url = `${BACKEND_URL}/search?q=${encodeURIComponent(query)}`;
+        let url = `/search?q=${encodeURIComponent(query)}`;
         if (budget) url += `&budget=${encodeURIComponent(budget)}`;
         if (rating) url += `&min_rating=${encodeURIComponent(rating)}`;
         
@@ -126,7 +125,7 @@ async function getAIRecommendations() {
     loadingSpinner.style.display = "block";
     loadingText.innerText = "✨ Asking Gemini AI to pick the best products...";
 
-    let url = `${BACKEND_URL}/ai-recommend?q=${encodeURIComponent(searchInput)}`;
+    let url = `/ai-recommend?q=${encodeURIComponent(searchInput)}`;
     if (budgetInput) url += `&budget=${encodeURIComponent(budgetInput)}`;
     if (ratingInput) url += `&min_rating=${encodeURIComponent(ratingInput)}`;
 
